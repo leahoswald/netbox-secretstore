@@ -17,6 +17,7 @@ from dcim.models import Device
 from virtualization.models import VirtualMachine
 from netbox.models import OrganizationalModel, NetBoxModel
 from utilities.querysets import RestrictedQuerySet
+from taggit.managers import TaggableManager
 from netbox_secretstore.exceptions import InvalidKey
 from netbox_secretstore.hashers import SecretValidationHasher
 from netbox_secretstore.querysets import UserKeyQuerySet
@@ -47,7 +48,7 @@ class UserKey(models.Model):
     user = models.OneToOneField(
         to=User,
         on_delete=models.CASCADE,
-        related_name='user_key',
+        related_name='netbox_secretstore_userkey',
         editable=False
     )
     public_key = models.TextField(
@@ -258,6 +259,11 @@ class SecretRole(OrganizationalModel):
 
     objects = RestrictedQuerySet.as_manager()
 
+    tags = TaggableManager(
+        through='extras.TaggedItem',
+        related_name='netbox_secretstore_secretroles'
+    )
+
     csv_headers = ['name', 'slug', 'description']
 
     class Meta:
@@ -312,6 +318,11 @@ class Secret(NetBoxModel):
     hash = models.CharField(
         max_length=128,
         editable=False
+    )
+
+    tags = TaggableManager(
+        through='extras.TaggedItem',
+        related_name='netbox_secretstore_secret'
     )
 
     objects = RestrictedQuerySet.as_manager()
